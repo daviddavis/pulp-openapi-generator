@@ -3,6 +3,8 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
+lang="${2:-python}"
+
 # Download the schema
 curl -o api.json "http://localhost:24817/pulp/api/v3/docs/api.json?bindings&plugin=$1"
 # Get the version of the pulpcore or plugin as reported by status API
@@ -15,7 +17,7 @@ else
 fi
 
 echo ::group::BINDINGS
-if [ $2 = 'python' ]
+if [ "$lang" = 'python' ]
 then
     docker run -u $(id -u) --rm -v ${PWD}:/local openapitools/openapi-generator-cli:v4.3.1 generate \
         -i /local/api.json \
@@ -28,7 +30,7 @@ then
     cp python/__init__.py $1-client/pulpcore/
     cp python/__init__.py $1-client/pulpcore/client
 fi
-if [ $2 = 'ruby' ]
+if [ "$lang" = 'ruby' ]
 then
     python3 remove-cookie-auth.py
     docker run -u $(id -u) --rm -v ${PWD}:/local openapitools/openapi-generator-cli:v4.2.3 generate \
@@ -40,7 +42,7 @@ then
         --skip-validate-spec \
         --strict-spec=false
 fi
-if [ $2 = 'typescript' ]
+if [ "$lang" = 'typescript' ]
 then
     podman run -u $(id -u) --rm -v ${PWD}:/local openapitools/openapi-generator-cli:v5.0.0 generate \
         -i /local/api.json \
